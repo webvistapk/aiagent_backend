@@ -40,6 +40,7 @@ class Employee(models.Model):
 
 class CompanyLicense(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    license_type = models.ForeignKey(LicenseType, on_delete=models.CASCADE, null=True, blank=True)
     total_users = models.IntegerField()
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     start_date = models.DateField()

@@ -91,10 +91,17 @@ class LicensingService:
             return Response({"status": "error", "message": "Employee not found for this user"}, status=status.HTTP_404_NOT_FOUND)
 
         # Get the latest license for the company
-        latest_license = CompanyLicense.objects.filter(company=company).order_by('-end_date').first()
+        latest_license: CompanyLicense = CompanyLicense.objects.filter(company=company).order_by('-end_date').first()
 
-        if not latest_license:
+        if not license_type_id and not latest_license:
             return Response({"status": "error", "message": "No previous license found for this company"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if latest_license:
+            start_date = latest_license.end_date + datetime.timedelta(days=1)
+            total_users = latest_license.total_users
+        else:
+            start_date = timezone.now().date()
+            total_users = 1
 
         if license_type_id:
             try:
@@ -105,9 +112,6 @@ class LicensingService:
             # Use the same license type as the previous license
             license_type = latest_license.license_type
 
-        total_users = latest_license.total_users
-
-        start_date = latest_license.end_date
 
         # Calculate end date based on license type
         duration = license_type.duration
