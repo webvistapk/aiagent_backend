@@ -3,6 +3,7 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from .models import LicenseType, Company, Employee
 from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer
+from django.db import transaction
 
 
 class LicensingService:
@@ -53,6 +54,7 @@ class LicensingService:
             return Response({"status": "error", "message": "License type not found"},
                             status=status.HTTP_404_NOT_FOUND)
 
+    @transaction.atomic
     def register_company(self, request):
         serializer = CompanyRegistrationSerializer(data=request.data)
         if serializer.is_valid():
