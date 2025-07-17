@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Daphne",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "daphne",
+            "args": [
+                "project.asgi:application",
+                "--port",
+                "8000"
+            ],
+            "django": true,
+            "autoStartBrowser": false,
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "preLaunchTask": "activateVenv"
+        }
+    ]
+}
