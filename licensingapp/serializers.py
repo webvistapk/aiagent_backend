@@ -62,3 +62,9 @@ class CompanyLicenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompanyLicense
         fields = ['license_type']
+
+
+class CompanyLicenseDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CompanyLicense
+        fields = '__all__'

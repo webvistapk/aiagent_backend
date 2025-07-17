@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
 from .models import LicenseType, Company, Employee, CompanyLicense
-from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer
+from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseDetailSerializer
 from django.db import transaction
 from django.utils import timezone
 import datetime
@@ -140,5 +140,5 @@ class LicensingService:
             status='active'
         )
 
-        serializer = CompanyLicenseSerializer(new_license)
+        serializer = CompanyLicenseDetailSerializer(new_license)
         return Response({"message": "License activated successfully", "status": "success", "data": serializer.data}, status=status.HTTP_201_CREATED)
