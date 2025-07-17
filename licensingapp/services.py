@@ -8,11 +8,20 @@ class LicensingService:
         pass
 
     def create_license_type(self, request):
-        serializer = LicenseTypeSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"license": [serializer.data], "status": "success"}, status=status.HTTP_201_CREATED)
-        return Response({"status": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        name = request.data.get('name')
+        if not name:
+            return Response({"status": "error", "errors": {"name": ["This field is required."]}}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            license_type = LicenseType.objects.get(name=name)
+            serializer = LicenseTypeSerializer(license_type)
+            return Response({"license": [serializer.data], "status": "success", "message": "License already exists"}, status=status.HTTP_200_OK)
+        except LicenseType.DoesNotExist:
+            serializer = LicenseTypeSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"license": [serializer.data], "status": "success"}, status=status.HTTP_201_CREATED)
+            return Response({"status": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     def update_license_type(self, request, pk):
         try:
