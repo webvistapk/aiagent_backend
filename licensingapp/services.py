@@ -59,6 +59,16 @@ class LicensingService:
         serializer = CompanyRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             company = serializer.create(serializer.validated_data)
-            return Response({"message": "Company registered successfully", "status": "success", "data": CompanyRegistrationSerializer(serializer.instance).data}, status=201)
+            user = User.objects.get(username=serializer.data['user']['username']) # get user object by username
+            company = Company.objects.get(name=serializer.data['company']['name']) # get company object by name
+            user_data = UserSerializer(user).data
+            company_data = CompanySerializer(company).data
+
+            response_data = {
+                'user': user_data,
+                'company': company_data
+            }
+
+            return Response({"message": "Company registered successfully", "status": "success", "data": response_data}, status=201)
         else:
             return Response({"status": "error", "errors": serializer.errors}, status=400)
