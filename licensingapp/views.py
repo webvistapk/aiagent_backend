@@ -1,12 +1,14 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.request import Request
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from rest_framework import status
 
 from .services import LicensingService
-from .serializers import LicenseTypeSerializer, CompanySerializer, CompanyRegistrationSerializer
+from .serializers import LicenseTypeSerializer, CompanySerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer
+from .models import CompanyLicense
 
 from project.commons.common_methods import get_serializer_schema
 
@@ -25,7 +27,7 @@ licensing_service = LicensingService()
                         type=openapi.TYPE_OBJECT, properties=get_serializer_schema(LicenseTypeSerializer),
                     ),
                 ),
-                'status': openapi.Schema(type=openapi.TYPE_STRING, description=''),
+                'status': openapi.Schema(type=openapi.TYPE_STRING, description='')
             },
         ),
     ),
@@ -43,7 +45,7 @@ def create_license_type(request: Request) -> Response:
         schema=openapi.Schema(
             type=openapi.TYPE_OBJECT, properties={
                 'message': openapi.Schema(type=openapi.TYPE_STRING, description=''),
-                'status': openapi.Schema(type=openapi.TYPE_STRING, description=''),
+                'status': openapi.Schema(type=openapi.TYPE_STRING, description='')
             },
         ),
     ),
@@ -65,7 +67,7 @@ def update_license_type(request: Request, pk: int) -> Response:
                         type=openapi.TYPE_OBJECT, properties=get_serializer_schema(LicenseTypeSerializer),
                     ),
                 ),
-                'status': openapi.Schema(type=openapi.TYPE_STRING, description=''),
+                'status': openapi.Schema(type=openapi.TYPE_STRING, description='')
             },
         ),
     ),
@@ -99,3 +101,25 @@ def get_license_type(request: Request, pk: int) -> Response:
 @permission_classes([AllowAny])
 def register_company(request: Request) -> Response:
     return licensing_service.register_company(request)
+
+
+@swagger_auto_schema(
+    method='post', operation_id="activate_license", request_body=CompanyLicenseSerializer,
+    responses={201: openapi.Response(
+        description="",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'message': openapi.Schema(type=openapi.TYPE_STRING, description=''),
+                'status': openapi.Schema(type=openapi.TYPE_STRING, description=''),
+                'data': openapi.Schema(
+                    type=openapi.TYPE_OBJECT, properties=get_serializer_schema(CompanyLicenseSerializer),
+                ),
+            },
+        ),
+    ),
+    },
+)
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def activate_license(request: Request) -> Response:
+    return licensing_service.activate_license(request)

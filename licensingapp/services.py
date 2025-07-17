@@ -1,8 +1,8 @@
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
-from .models import LicenseType, Company, Employee
-from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer
+from .models import LicenseType, Company, Employee, CompanyLicense
+from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer
 from django.db import transaction
 
 
@@ -72,3 +72,10 @@ class LicensingService:
             return Response({"message": "Company registered successfully", "status": "success", "data": response_data}, status=201)
         else:
             return Response({"status": "error", "errors": serializer.errors}, status=400)
+
+    def activate_license(self, request):
+        serializer = CompanyLicenseSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "License activated successfully", "status": "success", "data": serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({"status": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

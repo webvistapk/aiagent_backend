@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from project.commons.common_constants import DurationType, Role
+from project.commons.common_constants import DurationType, Role, LicenseStatus
+
 
 class LicenseType(models.Model):
     duration = models.IntegerField()
@@ -35,3 +36,19 @@ class Employee(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.company.name} - {self.role}'
+
+
+class CompanyLicense(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    total_users = models.IntegerField()
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    status = models.CharField(
+        max_length=10,
+        choices=[(tag.value, tag.name) for tag in LicenseStatus],
+        default=LicenseStatus.PENDING.value
+    )
+
+    def __str__(self):
+        return f'{self.company.name} - {self.status}'

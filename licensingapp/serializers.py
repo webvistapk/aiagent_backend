@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import LicenseType, Company, Employee
+from .models import LicenseType, Company, Employee, CompanyLicense
 
 
 class LicenseTypeSerializer(serializers.ModelSerializer):
@@ -54,3 +54,9 @@ class CompanyRegistrationSerializer(serializers.Serializer):
         Employee.objects.create(user=user, company=company, role='admin')
 
         return company
+
+
+class CompanyLicenseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CompanyLicense
+        fields = '__all__'
