@@ -85,3 +85,11 @@ STATICFILES_DIRS = [
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+YASG_SETTINGS = {
+    'DEFAULT_MODEL_RENDERING': 'example',
+    'DISPLAY_REQUEST_DURATION': False,
+    'SWAGGER_UI_SETTINGS': {
+        'docExpansion': 'none',
+    },
+}
