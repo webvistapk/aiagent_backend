@@ -81,18 +81,14 @@ class LicensingService:
             return Response({"status": "error", "errors": serializer.errors}, status=400)
 
     def activate_license(self, request):
-        company_id = request.data.get('company')
         license_type_id = request.data.get('license_type')
-        total_users = request.data.get('total_users')
-
-        if not company_id:
-            return Response({"status": "error", "errors": {"message": ["company is required"]}},
-                            status=status.HTTP_400_BAD_REQUEST)
+        user = request.user
 
         try:
-            company = Company.objects.get(pk=company_id)
-        except Company.DoesNotExist:
-            return Response({"status": "error", "message": "Company not found"}, status=status.HTTP_404_NOT_FOUND)
+            employee = Employee.objects.get(user=user)
+            company = employee.company
+        except Employee.DoesNotExist:
+            return Response({"status": "error", "message": "Employee not found for this user"}, status=status.HTTP_404_NOT_FOUND)
 
         # Get the latest license for the company
         latest_license = CompanyLicense.objects.filter(company=company).order_by('-end_date').first()
@@ -109,11 +105,7 @@ class LicensingService:
             # Use the same license type as the previous license
             license_type = latest_license.license_type
 
-        if total_users:
-            total_users = int(total_users)
-        else:
-            # Use the same number of users as the previous license
-            total_users = latest_license.total_users
+        total_users = latest_license.total_users
 
         start_date = latest_license.end_date
 
