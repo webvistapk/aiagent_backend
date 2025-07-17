@@ -57,6 +57,9 @@ class CompanyRegistrationSerializer(serializers.Serializer):
 
 
 class CompanyLicenseSerializer(serializers.ModelSerializer):
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all())
+    license_type = serializers.PrimaryKeyRelatedField(queryset=LicenseType.objects.all())
+
     class Meta:
         model = CompanyLicense
-        fields = '__all__'
+        fields = ['company', 'license_type']
