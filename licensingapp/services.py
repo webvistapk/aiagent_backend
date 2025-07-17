@@ -56,6 +56,11 @@ class LicensingService:
             return Response({"status": "error", "message": "License type not found"},
                             status=status.HTTP_404_NOT_FOUND)
 
+    def get_all_license_types(self):
+        license_types = LicenseType.objects.all()
+        serializer = LicenseTypeSerializer(license_types, many=True)
+        return Response({"license_types": serializer.data, "status": "success"}, status=status.HTTP_200_OK)
+
     @transaction.atomic
     def register_company(self, request):
         serializer = CompanyRegistrationSerializer(data=request.data)

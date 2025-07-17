@@ -80,6 +80,28 @@ def get_license_type(request: Request, pk: int) -> Response:
 
 
 @swagger_auto_schema(
+    method='get', operation_id="get_all_license_types", responses={200: openapi.Response(
+        description="",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'license_types': openapi.Schema(
+                    type=openapi.TYPE_ARRAY, items=openapi.Schema(
+                        type=openapi.TYPE_OBJECT, properties=get_serializer_schema(LicenseTypeSerializer),
+                    ),
+                ),
+                'status': openapi.Schema(type=openapi.TYPE_STRING, description='')
+            },
+        ),
+    ),
+    },
+)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_all_license_types(request: Request) -> Response:
+    return licensing_service.get_all_license_types()
+
+
+@swagger_auto_schema(
     method='post', operation_id="register_company", request_body=CompanyRegistrationSerializer,
     responses={201: openapi.Response(
         description="",
