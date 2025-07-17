@@ -137,7 +137,7 @@ class LicensingService:
             total_amount=total_amount,
             start_date=start_date,
             end_date=end_date,
-            status='pending'  # Or set to 'active' directly if appropriate
+            status='active'
         )
 
         serializer = CompanyLicenseSerializer(new_license)
