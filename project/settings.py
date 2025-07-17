@@ -90,12 +90,12 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-YASG_SETTINGS = {
-    'DEFAULT_MODEL_RENDERING': 'example',
-    'DISPLAY_REQUEST_DURATION': False,
-    'SWAGGER_UI_SETTINGS': {
-        'docExpansion': 'none',
-    },
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,  # Optional, if session auth is needed
+    'DEFAULT_MODEL_RENDERING': 'example',  # Show "Example" view by default
+    'DOC_EXPANSION': 'none',  # Collapse all endpoints by default
+    'DEFAULT_EXPAND_DEPTH': 0,  # Collapse all nested items
+    'DEFAULT_MODEL_EXPAND_DEPTH': 0,  # Collapse model schemas
 }
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
