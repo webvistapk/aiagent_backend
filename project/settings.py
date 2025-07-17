@@ -8,7 +8,7 @@ SECRET_KEY = 'django-insecure-j_^v$8#w^jpdux2*h4%+1t-k%ou&lvyus=z@#41uxrr)+%ie!$
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["aiagent.webvista.pk"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
