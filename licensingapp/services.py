@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
 from .models import LicenseType, Company, Employee
-from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer
+from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer
 
 
 class LicensingService:
@@ -54,29 +54,9 @@ class LicensingService:
                             status=status.HTTP_404_NOT_FOUND)
 
     def register_company(self, request):
-        user_serializer = UserSerializer(data=request.data)
-        company_serializer = CompanySerializer(data=request.data)
-
-        if user_serializer.is_valid() and company_serializer.is_valid():
-            user = user_serializer.save()
-
-            company = Company.objects.create(
-                name=company_serializer.validated_data['name'],
-                address=company_serializer.validated_data['address']
-            )
-
-            employee = Employee.objects.create(
-                user=user,
-                company=company,
-                role='admin'
-            )
-
-            return Response({"message": "Company registered successfully", "status": "success"},
-                            status=status.HTTP_201_CREATED)
+        serializer = CompanyRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            company = serializer.create(serializer.validated_data)
+            return Response({"message": "Company registered successfully", "status": "success", "data": CompanyRegistrationSerializer(serializer.instance).data}, status=201)
         else:
-            errors = {}
-            if not user_serializer.is_valid():
-                errors['user'] = user_serializer.errors
-            if not company_serializer.is_valid():
-                errors['company'] = company_serializer.errors
-            return Response({"status": "error", "errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status": "error", "errors": serializer.errors}, status=400)

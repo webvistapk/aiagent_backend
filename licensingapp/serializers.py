@@ -33,3 +33,24 @@ class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
         fields = ['user', 'company', 'role']
+
+
+class CompanyRegistrationSerializer(serializers.Serializer):
+    user = UserSerializer()
+    company = CompanySerializer()
+
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        company_data = validated_data.pop('company')
+
+        user_serializer = UserSerializer(data=user_data)
+        user_serializer.is_valid(raise_exception=True)
+        user = user_serializer.save()
+
+        company_serializer = CompanySerializer(data=company_data)
+        company_serializer.is_valid(raise_exception=True)
+        company = Company.objects.create(**company_serializer.validated_data)
+
+        Employee.objects.create(user=user, company=company, role='admin')
+
+        return company
