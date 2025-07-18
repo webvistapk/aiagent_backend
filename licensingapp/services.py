@@ -6,6 +6,9 @@ from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerialize
 from django.db import transaction
 from django.utils import timezone
 import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class LicensingService:
@@ -65,11 +68,18 @@ class LicensingService:
     def register_company(self, request):
         serializer = CompanyRegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            company = serializer.create(serializer.validated_data)
-            user = User.objects.get(username=serializer.data['user']['username'])  # get user object by username
-            company = Company.objects.get(name=serializer.data['company']['name'])  # get company object by name
-            user_data = UserSerializer(user).data
-            company_data = CompanySerializer(company).data
+            created_objects = serializer.create(serializer.validated_data)
+
+            if not created_objects or 'user' not in created_objects or 'company' not in created_objects:
+                logger.error("Missing 'user' or 'company' in created objects: %s", created_objects)
+                return Response({"status": "error", "message": "Failed to create user or company"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            user_instance = created_objects['user']
+            company_instance = created_objects['company']
+
+
+            user_data = UserSerializer(user_instance).data
+            company_data = CompanySerializer(company_instance).data
 
             response_data = {
                 'user': user_data,
@@ -90,7 +100,6 @@ class LicensingService:
         except Employee.DoesNotExist:
             return Response({"status": "error", "message": "Employee not found for this user"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Get the latest license for the company
         latest_license: CompanyLicense = CompanyLicense.objects.filter(company=company).order_by('-end_date').first()
 
         if not license_type_id and not latest_license:
@@ -109,27 +118,23 @@ class LicensingService:
             except LicenseType.DoesNotExist:
                 return Response({"status": "error", "message": "License type not found"}, status=status.HTTP_404_NOT_FOUND)
         else:
-            # Use the same license type as the previous license
             license_type = latest_license.license_type
 
 
-        # Calculate end date based on license type
         duration = license_type.duration
         duration_type = license_type.duration_type
 
         if duration_type == 'days':
             end_date = start_date + datetime.timedelta(days=duration)
         elif duration_type == 'months':
-            end_date = start_date + datetime.timedelta(days=30 * duration)  # Approximate months
+            end_date = start_date + datetime.timedelta(days=30 * duration)
         elif duration_type == 'years':
-            end_date = start_date + datetime.timedelta(days=365 * duration)  # Approximate years
+            end_date = start_date + datetime.timedelta(days=365 * duration)
         else:
             return Response({"status": "error", "message": "Invalid duration type"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Calculate total amount
         total_amount = license_type.price_per_user * int(total_users)
 
-        # Create new license
         new_license = CompanyLicense.objects.create(
             company=company,
             license_type=license_type,

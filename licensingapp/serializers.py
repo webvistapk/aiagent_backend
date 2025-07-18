@@ -53,18 +53,17 @@ class CompanyRegistrationSerializer(serializers.Serializer):
 
         Employee.objects.create(user=user, company=company, role='admin')
 
-        return company
+        return {'user': user, 'company': company}
 
 
 class CompanyLicenseSerializer(serializers.ModelSerializer):
-    license_type = serializers.PrimaryKeyRelatedField(queryset=LicenseType.objects.all(), required=False)
-
     class Meta:
         model = CompanyLicense
-        fields = ['license_type']
+        fields = '__all__'
 
 
 class CompanyLicenseDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompanyLicense
         fields = '__all__'
+        depth = 1
