@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from datetime import timedelta
+from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -8,9 +9,25 @@ SECRET_KEY = 'django-insecure-j_^v$8#w^jpdux2*h4%+1t-k%ou&lvyus=z@#41uxrr)+%ie!$
 
 DEBUG = True
 
-ALLOWED_HOSTS = ["aiagent.webvista.pk", "147.79.117.253"]
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    *default_headers
+]
+
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -20,11 +37,12 @@ INSTALLED_APPS = [
     'licensingapp',
     'rest_framework',
     'drf_yasg',
-    'whitenoise.runserver_nostatic',
+    'whitenoise',
     'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
