@@ -9,22 +9,15 @@ SECRET_KEY = 'django-insecure-j_^v$8#w^jpdux2*h4%+1t-k%ou&lvyus=z@#41uxrr)+%ie!$
 
 DEBUG = True
 
+ALLOWED_HOSTS = ["*"]  # Or use ['aiagent.webvista.pk'] for more security
+
 CORS_ALLOW_ALL_ORIGINS = True
-
 CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
+    'DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT',
 ]
-
 CORS_ALLOW_HEADERS = [
     *default_headers
 ]
-
-ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     'corsheaders',
@@ -37,14 +30,14 @@ INSTALLED_APPS = [
     'licensingapp',
     'rest_framework',
     'drf_yasg',
-    'whitenoise',
+    'whitenoise.runserver_nostatic',  # Whitenoise override
     'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Moved AFTER security
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -95,11 +88,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 STATIC_URL = '/static/'
@@ -107,6 +97,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -141,5 +133,3 @@ SWAGGER_SETTINGS = {
     'DEFAULT_EXPAND_DEPTH': 0,
     'DEFAULT_MODEL_EXPAND_DEPTH': 0,
 }
-
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
