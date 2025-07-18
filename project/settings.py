@@ -11,6 +11,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]  # Or use ['aiagent.webvista.pk'] for more security
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://aiagent.webvista.pk",
+]
+
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_METHODS = [
     'DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT',
