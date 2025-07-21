@@ -30,9 +30,19 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     class Meta:
         model = Employee
-        fields = ['user', 'company', 'role']
+        fields = ['id', 'user', 'company', 'role']
+
+
+class EmployeeGetSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    company = CompanySerializer(read_only=True)
+
+    class Meta:
+        model = Employee
+        fields = ['id', 'user', 'company', 'role']
 
 
 class CompanyRegistrationSerializer(serializers.Serializer):

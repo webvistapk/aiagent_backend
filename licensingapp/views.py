@@ -8,11 +8,11 @@ from rest_framework import status
 from project.commons.middleware import AdminRoleCheckPermission
 
 from .services import LicensingService
-from .serializers import LicenseTypeSerializer, CompanySerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseIncreaseUsersSerializer, CompanyLicenseDetailSerializer, EmployeeLicenseCapacitySerializer, EmployeeRegistrationByAdminSerializer, EmployeeSerializer
-from .models import CompanyLicense
+from .serializers import LicenseTypeSerializer, CompanySerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseIncreaseUsersSerializer, CompanyLicenseDetailSerializer, EmployeeLicenseCapacitySerializer, EmployeeRegistrationByAdminSerializer, EmployeeSerializer, EmployeeGetSerializer
+from .models import CompanyLicense, Employee
 
 
-from project.commons.common_methods import get_serializer_schema
+from project.commons.common_methods import get_serializer_schema, paginatedResponse
 
 licensing_service = LicensingService()
 
@@ -221,3 +221,56 @@ def check_license_capacity(request: Request) -> Response:
 @permission_classes([IsAuthenticated, AdminRoleCheckPermission])
 def register_employee(request: Request) -> Response:
     return licensing_service.register_employee_by_admin(request)
+
+
+@swagger_auto_schema(
+    method='get', operation_id="get_company_employees", responses={200: openapi.Response(
+        description="",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING, description=''),
+                'employees': openapi.Schema(
+                    type=openapi.TYPE_ARRAY, items=openapi.Schema(
+                        type=openapi.TYPE_OBJECT, properties=get_serializer_schema(EmployeeGetSerializer),
+                    ),
+                ),
+                'total_count': openapi.Schema(type=openapi.TYPE_INTEGER, description=''),
+                'has_next_page': openapi.Schema(type=openapi.TYPE_BOOLEAN, description=''),
+                'next_offset': openapi.Schema(type=openapi.TYPE_INTEGER, description=''),
+                'has_previous_page': openapi.Schema(type=openapi.TYPE_BOOLEAN, description=''),
+                'previous_offset': openapi.Schema(type=openapi.TYPE_INTEGER, description='')
+            },
+        ),
+    )}
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, AdminRoleCheckPermission])
+def get_company_employees(request: Request) -> Response:
+    user = request.user
+    try:
+        admin_employee = Employee.objects.get(user=user)
+        company = admin_employee.company
+    except Employee.DoesNotExist:
+        return Response({"status": "error", "message": "Admin employee not found for this user"}, status=status.HTTP_404_NOT_FOUND)
+
+    offset = int(request.query_params.get('offset', 0))
+    limit = int(request.query_params.get('limit', 10))
+
+    first_name = request.query_params.get('first_name', None)
+    last_name = request.query_params.get('last_name', None)
+    username = request.query_params.get('username', None)
+
+    employees = Employee.objects.filter(company=company)
+
+    if first_name:
+        employees = employees.filter(user__first_name__icontains=first_name)
+    if last_name:
+        employees = employees.filter(user__last_name__icontains=last_name)
+    if username:
+        employees = employees.filter(user__username__icontains=username)
+
+    total_count = employees.count()
+    employees = employees[offset:offset + limit]
+
+    serializer = EmployeeGetSerializer(employees, many=True)
+    return paginatedResponse(offset, limit, total_count, serializer, 'employees')

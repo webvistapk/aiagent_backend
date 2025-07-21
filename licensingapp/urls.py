@@ -11,4 +11,5 @@ urlpatterns = [
     path('license/increase-users/', increase_total_users, name='increase-license-users'),
     path('license/capacity-check/', check_license_capacity, name='check-license-capacity'),
     path('employee/register/', register_employee, name='register-employee-by-admin'),
+    path('employees/company/', get_company_employees, name='get-company-employees'),
 ]

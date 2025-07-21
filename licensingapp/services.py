@@ -2,12 +2,14 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
 from .models import LicenseType, Company, Employee, CompanyLicense
-from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseDetailSerializer, CompanyLicenseIncreaseUsersSerializer, EmployeeLicenseCapacitySerializer, EmployeeRegistrationByAdminSerializer
+from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseDetailSerializer, CompanyLicenseIncreaseUsersSerializer, EmployeeLicenseCapacitySerializer, EmployeeRegistrationByAdminSerializer, EmployeeGetSerializer
 from django.db import transaction
 from django.utils import timezone
 import datetime
 import logging
 from project.commons.common_constants import Role
+
+from project.commons.common_methods import paginatedResponse
 
 logger = logging.getLogger(__name__)
 
@@ -244,3 +246,32 @@ class LicensingService:
             # Handle potential database errors, e.g., duplicate username
             logger.error(f"Error registering employee: {e}")
             return Response({"status": "error", "message": "Failed to register employee.", "detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    def get_company_employees(self, request):
+        user = request.user
+        try:
+            admin_employee = Employee.objects.get(user=user)
+            company = admin_employee.company
+        except Employee.DoesNotExist:
+            return Response({"status": "error", "message": "Admin employee not found for this user"}, status=status.HTTP_404_NOT_FOUND)
+
+        offset = int(request.query_params.get('offset', 0))
+        limit = int(request.query_params.get('limit', 10))
+
+        first_name = request.query_params.get('first_name', None)
+        last_name = request.query_params.get('last_name', None)
+        username = request.query_params.get('username', None)
+
+        employees = Employee.objects.filter(company=company)
+
+        if first_name:
+            employees = employees.filter(user__first_name__icontains=first_name)
+        if last_name:
+            employees = employees.filter(user__last_name__icontains=last_name)
+        if username:
+            employees = employees.filter(user__username__icontains=username)
+
+        total_count = employees.count()
+        employees = employees[offset:offset + limit]
+
+        serializer = EmployeeGetSerializer(employees, many=True)
+        return paginatedResponse(offset, limit, total_count, serializer, 'employees')
