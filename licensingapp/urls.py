@@ -12,4 +12,5 @@ urlpatterns = [
     path('license/capacity-check/', check_license_capacity, name='check-license-capacity'),
     path('employee/register/', register_employee, name='register-employee-by-admin'),
     path('employees/company/', get_company_employees, name='get-company-employees'),
+    path('employee/delete/<int:pk>/', delete_employee, name='delete-employee'),
 ]

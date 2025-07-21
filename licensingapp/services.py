@@ -276,3 +276,22 @@ class LicensingService:
 
         serializer = EmployeeGetSerializer(employees, many=True)
         return paginatedResponse(offset, limit, total_count, serializer, 'employees')
+    
+    def delete_employee(self, request, pk):
+        user = request.user
+        try:
+            admin_employee = Employee.objects.get(user=user)
+            company = admin_employee.company
+        except Employee.DoesNotExist:
+            return Response({"status": "error", "message": "Admin employee not found for this user"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            employee_to_delete = Employee.objects.get(pk=pk, company=company)
+        except Employee.DoesNotExist:
+            return Response({"status": "error", "message": "Employee not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if employee_to_delete == admin_employee:
+            return Response({"status": "error", "message": "Not authorized to delete yourself"}, status=status.HTTP_403_FORBIDDEN)
+
+        employee_to_delete.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

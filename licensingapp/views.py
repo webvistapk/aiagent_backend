@@ -247,3 +247,32 @@ def register_employee(request: Request) -> Response:
 @permission_classes([IsAuthenticated, AdminRoleCheckPermission])
 def get_company_employees(request: Request) -> Response:
     return licensing_service.get_company_employees(request)
+
+
+@swagger_auto_schema(
+    method='delete', operation_id="delete_employee", responses={204: openapi.Response(
+        description="No Content",
+    ),
+    404: openapi.Response(
+        description="Employee not found or Admin employee not found",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'message': openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        )
+    ),
+    403: openapi.Response(
+        description="Not authorized to delete this employee",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'message': openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        )
+    )}
+)
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, AdminRoleCheckPermission])
+def delete_employee(request: Request, pk: int) -> Response:
+    return licensing_service.delete_employee(request, pk)
