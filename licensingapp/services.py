@@ -193,9 +193,12 @@ class LicensingService:
         else:
             return Response({"status": "error", "message": "No active license found for this company"}, status=status.HTTP_404_NOT_FOUND)
 
+        users_left = max(0, allowed_users - current_employees_count)
+
         data = {
             'current_employees': current_employees_count,
-            'allowed_users': allowed_users
+            'allowed_users': allowed_users,
+            'users_left': users_left
         }
         serializer = EmployeeLicenseCapacitySerializer(data)
         return Response({"message": "License capacity details retrieved successfully", "status": "success", "data": serializer.data}, status=status.HTTP_200_OK)

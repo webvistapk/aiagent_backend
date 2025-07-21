@@ -75,3 +75,4 @@ class CompanyLicenseIncreaseUsersSerializer(serializers.Serializer):
 class EmployeeLicenseCapacitySerializer(serializers.Serializer):
     current_employees = serializers.IntegerField()
     allowed_users = serializers.IntegerField()
+    users_left = serializers.IntegerField()
