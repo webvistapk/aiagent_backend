@@ -5,3 +5,7 @@ from licensingapp.test_cases.get_all_license_types import GetAllLicenseTypesTest
 from licensingapp.test_cases.register_company import RegisterCompanyTests
 from licensingapp.test_cases.activate_license import ActivateLicenseTests
 from licensingapp.test_cases.increase_total_users import IncreaseTotalUsersTests
+from licensingapp.test_cases.check_license_capacity import CheckLicenseCapacityTests
+from licensingapp.test_cases.register_employee import RegisterEmployeeTests
+from licensingapp.test_cases.get_company_employees import GetCompanyEmployeesTests
+from licensingapp.test_cases.delete_employee import DeleteEmployeeTests
