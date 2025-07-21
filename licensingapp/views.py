@@ -8,7 +8,7 @@ from rest_framework import status
 from project.commons.middleware import AdminRoleCheckPermission
 
 from .services import LicensingService
-from .serializers import LicenseTypeSerializer, CompanySerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseIncreaseUsersSerializer, CompanyLicenseDetailSerializer, EmployeeLicenseCapacitySerializer
+from .serializers import LicenseTypeSerializer, CompanySerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseIncreaseUsersSerializer, CompanyLicenseDetailSerializer, EmployeeLicenseCapacitySerializer, EmployeeRegistrationByAdminSerializer, EmployeeSerializer
 from .models import CompanyLicense
 
 
@@ -108,9 +108,7 @@ def get_all_license_types(request: Request) -> Response:
                 'message': openapi.Schema(type=openapi.TYPE_STRING, description=''),
                 'status': openapi.Schema(type=openapi.TYPE_STRING, description=''),
                 'data': openapi.Schema(
-                    type=openapi.TYPE_ARRAY, items=openapi.Schema(
-                        type=openapi.TYPE_OBJECT, properties=get_serializer_schema(CompanyRegistrationSerializer),
-                    ),
+                    type=openapi.TYPE_OBJECT, properties=get_serializer_schema(CompanyRegistrationSerializer),
                 ),
             },
         ),
@@ -183,3 +181,43 @@ def increase_total_users(request: Request) -> Response:
 @permission_classes([IsAuthenticated, AdminRoleCheckPermission])
 def check_license_capacity(request: Request) -> Response:
     return licensing_service.check_license_capacity(request)
+
+
+@swagger_auto_schema(
+    method='post', operation_id="register_employee", request_body=EmployeeRegistrationByAdminSerializer,
+    responses={201: openapi.Response(
+        description="",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'message': openapi.Schema(type=openapi.TYPE_STRING, description=''),
+                'status': openapi.Schema(type=openapi.TYPE_STRING, description=''),
+                'data': openapi.Schema(
+                    type=openapi.TYPE_OBJECT, properties=get_serializer_schema(EmployeeSerializer),
+                ),
+            },
+        ),
+    ),
+    400: openapi.Response(
+        description="No more capacity available or invalid input",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'message': openapi.Schema(type=openapi.TYPE_STRING),
+                'errors': openapi.Schema(type=openapi.TYPE_OBJECT, additionalProperties=True, description='Validation errors')
+            }
+        )
+    ),
+    404: openapi.Response(
+        description="Admin employee not found or other internal error",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'message': openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        )
+    )}
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, AdminRoleCheckPermission])
+def register_employee(request: Request) -> Response:
+    return licensing_service.register_employee_by_admin(request)

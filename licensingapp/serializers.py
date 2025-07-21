@@ -76,3 +76,10 @@ class EmployeeLicenseCapacitySerializer(serializers.Serializer):
     current_employees = serializers.IntegerField()
     allowed_users = serializers.IntegerField()
     users_left = serializers.IntegerField()
+
+
+class EmployeeRegistrationByAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'password', 'email', 'first_name', 'last_name']
+        extra_kwargs = {'password': {'write_only': True}}

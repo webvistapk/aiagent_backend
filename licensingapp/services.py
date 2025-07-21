@@ -2,11 +2,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
 from .models import LicenseType, Company, Employee, CompanyLicense
-from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseDetailSerializer, CompanyLicenseIncreaseUsersSerializer, EmployeeLicenseCapacitySerializer
+from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseDetailSerializer, CompanyLicenseIncreaseUsersSerializer, EmployeeLicenseCapacitySerializer, EmployeeRegistrationByAdminSerializer
 from django.db import transaction
 from django.utils import timezone
 import datetime
 import logging
+from project.commons.common_constants import Role
 
 logger = logging.getLogger(__name__)
 
@@ -191,6 +192,7 @@ class LicensingService:
         if latest_license:
             allowed_users = latest_license.total_users
         else:
+            # This case means no active license, which is an error for checking capacity.
             return Response({"status": "error", "message": "No active license found for this company"}, status=status.HTTP_404_NOT_FOUND)
 
         users_left = max(0, allowed_users - current_employees_count)
@@ -202,3 +204,43 @@ class LicensingService:
         }
         serializer = EmployeeLicenseCapacitySerializer(data)
         return Response({"message": "License capacity details retrieved successfully", "status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+
+    @transaction.atomic
+    def register_employee_by_admin(self, request):
+        user = request.user
+        try:
+            admin_employee = Employee.objects.get(user=user)
+            company = admin_employee.company
+        except Employee.DoesNotExist:
+            return Response({"status": "error", "message": "Admin employee not found for this user"}, status=status.HTTP_404_NOT_FOUND)
+
+        capacity_response = self.check_license_capacity(request)
+        if capacity_response.status_code != status.HTTP_200_OK or capacity_response.data.get('status') == 'error':
+            return capacity_response # Return the error response from capacity check
+
+        capacity_data = capacity_response.data.get('data', {})
+        users_left = capacity_data.get('users_left', 0)
+
+        if users_left <= 0:
+            return Response({"status": "error", "message": "No more capacity available for new employees on the current license."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = EmployeeRegistrationByAdminSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({"status": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            new_user = serializer.save()
+
+            employee = Employee.objects.create(
+                user=new_user,
+                company=company,
+                role=Role.USER.value
+            )
+
+            response_serializer = EmployeeSerializer(employee)
+            return Response({"message": "Employee registered successfully", "status": "success", "data": response_serializer.data}, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            # Handle potential database errors, e.g., duplicate username
+            logger.error(f"Error registering employee: {e}")
+            return Response({"status": "error", "message": "Failed to register employee.", "detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
