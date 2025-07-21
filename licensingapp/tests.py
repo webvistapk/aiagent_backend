@@ -1,3 +1,2 @@
-from django.test import TestCase
+from licensingapp.test_cases.create_license_type import CreateLicenseTypeTests
 
-# Create your tests here.
