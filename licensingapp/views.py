@@ -246,31 +246,4 @@ def register_employee(request: Request) -> Response:
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, AdminRoleCheckPermission])
 def get_company_employees(request: Request) -> Response:
-    user = request.user
-    try:
-        admin_employee = Employee.objects.get(user=user)
-        company = admin_employee.company
-    except Employee.DoesNotExist:
-        return Response({"status": "error", "message": "Admin employee not found for this user"}, status=status.HTTP_404_NOT_FOUND)
-
-    offset = int(request.query_params.get('offset', 0))
-    limit = int(request.query_params.get('limit', 10))
-
-    first_name = request.query_params.get('first_name', None)
-    last_name = request.query_params.get('last_name', None)
-    username = request.query_params.get('username', None)
-
-    employees = Employee.objects.filter(company=company)
-
-    if first_name:
-        employees = employees.filter(user__first_name__icontains=first_name)
-    if last_name:
-        employees = employees.filter(user__last_name__icontains=last_name)
-    if username:
-        employees = employees.filter(user__username__icontains=username)
-
-    total_count = employees.count()
-    employees = employees[offset:offset + limit]
-
-    serializer = EmployeeGetSerializer(employees, many=True)
-    return paginatedResponse(offset, limit, total_count, serializer, 'employees')
+    return licensing_service.get_company_employees(request)

@@ -246,6 +246,7 @@ class LicensingService:
             # Handle potential database errors, e.g., duplicate username
             logger.error(f"Error registering employee: {e}")
             return Response({"status": "error", "message": "Failed to register employee.", "detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
     def get_company_employees(self, request):
         user = request.user
         try:
