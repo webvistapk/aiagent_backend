@@ -8,4 +8,5 @@ urlpatterns = [
     path('types/all/', get_all_license_types, name='get-all-license-types'),
     path('company/register/', register_company, name='register-company'),
     path('license/activate/', activate_license, name='activate-license'),
+    path('license/increase-users/', increase_total_users, name='increase-license-users'),
 ]

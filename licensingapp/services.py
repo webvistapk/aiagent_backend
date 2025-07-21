@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
 from .models import LicenseType, Company, Employee, CompanyLicense
-from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseDetailSerializer
+from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseDetailSerializer, CompanyLicenseIncreaseUsersSerializer
 from django.db import transaction
 from django.utils import timezone
 import datetime
@@ -147,3 +147,30 @@ class LicensingService:
 
         serializer = CompanyLicenseDetailSerializer(new_license)
         return Response({"message": "License activated successfully", "status": "success", "data": serializer.data}, status=status.HTTP_201_CREATED)
+
+    @transaction.atomic
+    def increase_total_users(self, request):
+        user = request.user
+        try:
+            employee = Employee.objects.get(user=user)
+            company = employee.company
+        except Employee.DoesNotExist:
+            return Response({"status": "error", "message": "Employee not found for this user"}, status=status.HTTP_404_NOT_FOUND)
+
+        latest_license: CompanyLicense = CompanyLicense.objects.filter(company=company, status='active').order_by('-end_date').first()
+
+        if not latest_license:
+            return Response({"status": "error", "message": "No active license found for this company"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = CompanyLicenseIncreaseUsersSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({"status": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        total_users_to_add = serializer.validated_data['total_users_to_add']
+
+        latest_license.total_users += total_users_to_add
+        latest_license.total_amount = latest_license.license_type.price_per_user * latest_license.total_users
+        latest_license.save()
+
+        response_serializer = CompanyLicenseDetailSerializer(latest_license)
+        return Response({"message": "Total users increased successfully", "status": "success", "data": response_serializer.data}, status=status.HTTP_200_OK)

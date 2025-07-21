@@ -8,7 +8,7 @@ from rest_framework import status
 from project.commons.middleware import AdminRoleCheckPermission
 
 from .services import LicensingService
-from .serializers import LicenseTypeSerializer, CompanySerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer
+from .serializers import LicenseTypeSerializer, CompanySerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseIncreaseUsersSerializer, CompanyLicenseDetailSerializer
 from .models import CompanyLicense
 
 
@@ -147,3 +147,25 @@ def register_company(request: Request) -> Response:
 @permission_classes([IsAuthenticated, AdminRoleCheckPermission])
 def activate_license(request: Request) -> Response:
     return licensing_service.activate_license(request)
+
+
+@swagger_auto_schema(
+    method='post', operation_id="increase_total_users", request_body=CompanyLicenseIncreaseUsersSerializer,
+    responses={200: openapi.Response(
+        description="",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'message': openapi.Schema(type=openapi.TYPE_STRING, description=''),
+                'status': openapi.Schema(type=openapi.TYPE_STRING, description=''),
+                'data': openapi.Schema(
+                    type=openapi.TYPE_OBJECT, properties=get_serializer_schema(CompanyLicenseDetailSerializer),
+                ),
+            },
+        ),
+    ),
+    }
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, AdminRoleCheckPermission])
+def increase_total_users(request: Request) -> Response:
+    return licensing_service.increase_total_users(request)

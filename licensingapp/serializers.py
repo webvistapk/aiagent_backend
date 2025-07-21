@@ -67,3 +67,6 @@ class CompanyLicenseDetailSerializer(serializers.ModelSerializer):
         model = CompanyLicense
         fields = '__all__'
         depth = 1
+        
+class CompanyLicenseIncreaseUsersSerializer(serializers.Serializer):
+    total_users_to_add = serializers.IntegerField(min_value=1)
