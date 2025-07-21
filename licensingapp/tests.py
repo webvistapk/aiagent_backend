@@ -1,2 +1,3 @@
 from licensingapp.test_cases.create_license_type import CreateLicenseTypeTests
 from licensingapp.test_cases.update_license_type import UpdateLicenseTypeTests
+from licensingapp.test_cases.get_license_type import GetLicenseTypeTests
