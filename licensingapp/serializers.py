@@ -70,3 +70,8 @@ class CompanyLicenseDetailSerializer(serializers.ModelSerializer):
         
 class CompanyLicenseIncreaseUsersSerializer(serializers.Serializer):
     total_users_to_add = serializers.IntegerField(min_value=1)
+
+
+class EmployeeLicenseCapacitySerializer(serializers.Serializer):
+    current_employees = serializers.IntegerField()
+    allowed_users = serializers.IntegerField()

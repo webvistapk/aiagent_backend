@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
 from .models import LicenseType, Company, Employee, CompanyLicense
-from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseDetailSerializer, CompanyLicenseIncreaseUsersSerializer
+from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseDetailSerializer, CompanyLicenseIncreaseUsersSerializer, EmployeeLicenseCapacitySerializer
 from django.db import transaction
 from django.utils import timezone
 import datetime
@@ -174,3 +174,28 @@ class LicensingService:
 
         response_serializer = CompanyLicenseDetailSerializer(latest_license)
         return Response({"message": "Total users increased successfully", "status": "success", "data": response_serializer.data}, status=status.HTTP_200_OK)
+
+    def check_license_capacity(self, request):
+        user = request.user
+        try:
+            employee = Employee.objects.get(user=user)
+            company = employee.company
+        except Employee.DoesNotExist:
+            return Response({"status": "error", "message": "Employee not found for this user"}, status=status.HTTP_404_NOT_FOUND)
+
+        current_employees_count = Employee.objects.filter(company=company).count()
+
+        latest_license: CompanyLicense = CompanyLicense.objects.filter(company=company, status='active').order_by('-end_date').first()
+
+        allowed_users = 0
+        if latest_license:
+            allowed_users = latest_license.total_users
+        else:
+            return Response({"status": "error", "message": "No active license found for this company"}, status=status.HTTP_404_NOT_FOUND)
+
+        data = {
+            'current_employees': current_employees_count,
+            'allowed_users': allowed_users
+        }
+        serializer = EmployeeLicenseCapacitySerializer(data)
+        return Response({"message": "License capacity details retrieved successfully", "status": "success", "data": serializer.data}, status=status.HTTP_200_OK)

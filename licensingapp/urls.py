@@ -9,4 +9,5 @@ urlpatterns = [
     path('company/register/', register_company, name='register-company'),
     path('license/activate/', activate_license, name='activate-license'),
     path('license/increase-users/', increase_total_users, name='increase-license-users'),
+    path('license/capacity-check/', check_license_capacity, name='check-license-capacity'),
 ]
