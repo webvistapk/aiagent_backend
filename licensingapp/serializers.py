@@ -12,7 +12,7 @@ class LicenseTypeSerializer(serializers.ModelSerializer):
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = ['name', 'address']
+        fields = ['id', 'name', 'address']
 
 
 class UserSerializer(serializers.ModelSerializer):

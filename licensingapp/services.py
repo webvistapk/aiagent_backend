@@ -299,3 +299,36 @@ class LicensingService:
         employee_to_delete.delete()
         user_to_delete.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @transaction.atomic
+    def delete_company(self, request, pk):
+        user = request.user
+        try:
+            admin_employee = Employee.objects.get(user=user)
+            company_to_delete = Company.objects.get(pk=pk)
+        except Employee.DoesNotExist:
+            return Response({"status": "error", "message": "Admin employee not found for this user"}, status=status.HTTP_403_FORBIDDEN)
+        except Company.DoesNotExist:
+            return Response({"status": "error", "message": "Company not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if admin_employee.role != Role.ADMIN.value:
+            return Response({"status": "error", "message": "Only an admin can delete a company"}, status=status.HTTP_403_FORBIDDEN)
+
+        if company_to_delete.id != admin_employee.company.id:
+            return Response({"status": "error", "message": "Not authorized to delete other companies"}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            user_ids_to_delete = list(Employee.objects.filter(company=company_to_delete).values_list('user__id', flat=True))
+
+            CompanyLicense.objects.filter(company=company_to_delete).delete()
+
+            Employee.objects.filter(company=company_to_delete).delete()
+
+            User.objects.filter(id__in=user_ids_to_delete).delete()
+
+            company_to_delete.delete()
+
+            return Response({"message": "Company and all associated data deleted successfully", "status": "success"}, status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            logger.error(f"Error deleting company (ID: {pk}): {e}")
+            return Response({"status": "error", "message": "An error occurred during company deletion", "detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

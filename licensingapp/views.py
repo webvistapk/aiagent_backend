@@ -276,3 +276,41 @@ def get_company_employees(request: Request) -> Response:
 @permission_classes([IsAuthenticated, AdminRoleCheckPermission])
 def delete_employee(request: Request, pk: int) -> Response:
     return licensing_service.delete_employee(request, pk)
+
+@swagger_auto_schema(
+    method='delete', operation_id="delete_company", responses={204: openapi.Response(
+        description="No Content",
+    ),
+    404: openapi.Response(
+        description="Company not found or Admin employee not found",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'message': openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        )
+    ),
+    403: openapi.Response(
+        description="Not authorized to delete this company",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'message': openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        )
+    ),
+    500: openapi.Response(
+        description="Internal Server Error",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'message': openapi.Schema(type=openapi.TYPE_STRING),
+                'detail': openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        )
+    )}
+)
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, AdminRoleCheckPermission])
+def delete_company(request: Request, pk: int) -> Response:
+    return licensing_service.delete_company(request, pk)
