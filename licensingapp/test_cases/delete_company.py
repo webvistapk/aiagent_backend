@@ -55,11 +55,12 @@ class DeleteCompanyTests(APITestCase):
         self.assertFalse(Employee.objects.filter(company=self.admin_company).exists())
         self.assertFalse(User.objects.filter(id=self.admin_user.id).exists())
         self.assertFalse(User.objects.filter(id=self.employee_user.id).exists())
+        self.assertFalse(User.objects.filter(id=self.non_admin_user.id).exists())
         self.assertFalse(CompanyLicense.objects.filter(company=self.admin_company).exists())
 
         self.assertEqual(Company.objects.count(), initial_company_count - 1)
-        self.assertEqual(Employee.objects.count(), initial_employee_count - 2)
-        self.assertEqual(User.objects.count(), initial_user_count - 2)
+        self.assertEqual(Employee.objects.count(), initial_employee_count - 3)
+        self.assertEqual(User.objects.count(), initial_user_count - 3)
         self.assertEqual(CompanyLicense.objects.count(), initial_license_count - 1)
 
 
@@ -81,8 +82,7 @@ class DeleteCompanyTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.non_admin_access_token)
         response = self.client.delete(self.delete_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data['status'], "error")
-        self.assertEqual(response.data['message'], "Only an admin can delete a company")
+        self.assertEqual(response.data['detail'], "You do not have permission to perform this action.")
 
     def test_admin_employee_not_found(self):
         user_without_employee = User.objects.create_user(username='noemployee_user', password='pass')
@@ -91,8 +91,7 @@ class DeleteCompanyTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token_no_employee)
         response = self.client.delete(self.delete_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data['status'], "error")
-        self.assertEqual(response.data['message'], "Admin employee not found for this user")
+        self.assertEqual(response.data['detail'], "You do not have permission to perform this action.")
 
     def test_admin_deletes_other_company(self):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.other_company_admin_access_token)

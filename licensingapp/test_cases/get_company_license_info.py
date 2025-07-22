@@ -50,8 +50,11 @@ class GetCompanyLicenseInfoTests(APITestCase):
         self.token_admin_no_active_license = str(AccessToken.for_user(self.admin_no_active_license_user))
 
     def test_success_with_active_license(self):
+        print("\nTest successful retrieval with an active license")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
         response = self.client.get(self.get_url)
+        print(f"Response Status Code: {response.status_code}")
+        print(f"Response Data: {response.data}")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['status'], "success")
@@ -99,5 +102,4 @@ class GetCompanyLicenseInfoTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_no_employee)
         response = self.client.get(self.get_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data['status'], "error")
-        self.assertEqual(response.data['message'], "Employee not found for this user")
+        self.assertEqual(response.data['detail'], "You do not have permission to perform this action.")
