@@ -332,3 +332,30 @@ class LicensingService:
         except Exception as e:
             logger.error(f"Error deleting company (ID: {pk}): {e}")
             return Response({"status": "error", "message": "An error occurred during company deletion", "detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def get_company_license_info(self, request):
+        user = request.user
+        try:
+            employee = Employee.objects.get(user=user)
+            company = employee.company
+        except Employee.DoesNotExist:
+            return Response({"status": "error", "message": "Employee not found for this user"}, status=status.HTTP_404_NOT_FOUND)
+
+        company_serializer = CompanySerializer(company)
+
+        active_license = CompanyLicense.objects.filter(
+            company=company,
+            status='active',
+            end_date__gte=timezone.now().date()
+        ).order_by('-end_date').first()
+
+        license_data = None
+        if active_license:
+            license_data = CompanyLicenseDetailSerializer(active_license).data
+
+        response_data = {
+            "company": company_serializer.data,
+            "active_license": license_data
+        }
+
+        return Response({"message": "Company and license info retrieved successfully", "status": "success", "data": response_data}, status=status.HTTP_200_OK)

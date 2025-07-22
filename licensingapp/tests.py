@@ -9,3 +9,5 @@ from licensingapp.test_cases.check_license_capacity import CheckLicenseCapacityT
 from licensingapp.test_cases.register_employee import RegisterEmployeeTests
 from licensingapp.test_cases.get_company_employees import GetCompanyEmployeesTests
 from licensingapp.test_cases.delete_employee import DeleteEmployeeTests
+from licensingapp.test_cases.delete_company import DeleteCompanyTests
+from licensingapp.test_cases.get_company_license_info import GetCompanyLicenseInfoTests

@@ -41,7 +41,6 @@ class DeleteCompanyTests(APITestCase):
 
 
     def test_success_company_deletion_by_its_admin(self):
-        print("\nTest successful company deletion by its own admin")
         initial_company_count = Company.objects.count()
         initial_employee_count = Employee.objects.count()
         initial_user_count = User.objects.count()
@@ -49,8 +48,6 @@ class DeleteCompanyTests(APITestCase):
 
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
         response = self.client.delete(self.delete_url)
-        print(f"Response Status Code: {response.status_code}")
-        print(f"Response Data: {response.data}")
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -67,53 +64,39 @@ class DeleteCompanyTests(APITestCase):
 
 
     def test_company_not_found(self):
-        print("\nTest delete non-existent company")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
         non_existent_id = self.admin_company.id + 999
         url = reverse('delete-company', args=[non_existent_id])
         response = self.client.delete(url)
-        print(f"Response Status Code: {response.status_code}")
-        print(f"Response Data: {response.data}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data['status'], "error")
         self.assertEqual(response.data['message'], "Company not found")
 
     def test_unauthenticated(self):
-        print("\nTest delete company without authentication")
         self.client.credentials()
         response = self.client.delete(self.delete_url)
-        print(f"Response Status Code: {response.status_code}")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_not_admin_role(self):
-        print("\nTest delete company by a non-admin user")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.non_admin_access_token)
         response = self.client.delete(self.delete_url)
-        print(f"Response Status Code: {response.status_code}")
-        print(f"Response Data: {response.data}")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data['status'], "error")
         self.assertEqual(response.data['message'], "Only an admin can delete a company")
 
     def test_admin_employee_not_found(self):
-        print("\nTest delete company when admin employee is not found for the user (user exists but no employee obj)")
         user_without_employee = User.objects.create_user(username='noemployee_user', password='pass')
         token_no_employee = str(AccessToken.for_user(user_without_employee))
 
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token_no_employee)
         response = self.client.delete(self.delete_url)
-        print(f"Response Status Code: {response.status_code}")
-        print(f"Response Data: {response.data}")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data['status'], "error")
         self.assertEqual(response.data['message'], "Admin employee not found for this user")
 
     def test_admin_deletes_other_company(self):
-        print("\nTest admin tries to delete a company they are not an admin of")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.other_company_admin_access_token)
         response = self.client.delete(self.delete_url)
-        print(f"Response Status Code: {response.status_code}")
-        print(f"Response Data: {response.data}")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data['status'], "error")
         self.assertEqual(response.data['message'], "Not authorized to delete other companies")

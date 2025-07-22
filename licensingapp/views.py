@@ -314,3 +314,50 @@ def delete_employee(request: Request, pk: int) -> Response:
 @permission_classes([IsAuthenticated, AdminRoleCheckPermission])
 def delete_company(request: Request, pk: int) -> Response:
     return licensing_service.delete_company(request, pk)
+
+@swagger_auto_schema(
+    method='get', operation_id="get_company_license_info",
+    responses={200: openapi.Response(
+        description="Company and active license information retrieved successfully",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'message': openapi.Schema(type=openapi.TYPE_STRING),
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'data': openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'company': openapi.Schema(
+                            type=openapi.TYPE_OBJECT, properties=get_serializer_schema(CompanySerializer)
+                        ),
+                        'active_license': openapi.Schema(
+                            type=openapi.TYPE_OBJECT, properties=get_serializer_schema(CompanyLicenseDetailSerializer), nullable=True
+                        )
+                    }
+                )
+            }
+        )
+    ),
+    403: openapi.Response(
+        description="Forbidden: Admin employee not found for this user or not authorized",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'message': openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        )
+    ),
+    404: openapi.Response(
+        description="Not Found: Employee not found for this user",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'message': openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        )
+    )}
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, AdminRoleCheckPermission])
+def get_company_license_info(request: Request) -> Response:
+    return licensing_service.get_company_license_info(request)
