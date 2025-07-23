@@ -11,3 +11,4 @@ from licensingapp.test_cases.get_company_employees import GetCompanyEmployeesTes
 from licensingapp.test_cases.delete_employee import DeleteEmployeeTests
 from licensingapp.test_cases.delete_company import DeleteCompanyTests
 from licensingapp.test_cases.get_company_license_info import GetCompanyLicenseInfoTests
+from licensingapp.test_cases.register_company_for_existing_user import RegisterCompanyForExistingUserTests

@@ -194,7 +194,6 @@ class LicensingService:
         if latest_license:
             allowed_users = latest_license.total_users
         else:
-            # This case means no active license, which is an error for checking capacity.
             return Response({"status": "error", "message": "No active license found for this company"}, status=status.HTTP_404_NOT_FOUND)
 
         users_left = max(0, allowed_users - current_employees_count)
@@ -218,7 +217,7 @@ class LicensingService:
 
         capacity_response = self.check_license_capacity(request)
         if capacity_response.status_code != status.HTTP_200_OK or capacity_response.data.get('status') == 'error':
-            return capacity_response # Return the error response from capacity check
+            return capacity_response
 
         capacity_data = capacity_response.data.get('data', {})
         users_left = capacity_data.get('users_left', 0)
@@ -243,7 +242,6 @@ class LicensingService:
             return Response({"message": "Employee registered successfully", "status": "success", "data": response_serializer.data}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            # Handle potential database errors, e.g., duplicate username
             logger.error(f"Error registering employee: {e}")
             return Response({"status": "error", "message": "Failed to register employee.", "detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
@@ -359,3 +357,33 @@ class LicensingService:
         }
 
         return Response({"message": "Company and license info retrieved successfully", "status": "success", "data": response_data}, status=status.HTTP_200_OK)
+
+    @transaction.atomic
+    def register_company_for_existing_user(self, request):
+        user = request.user
+
+        if Employee.objects.filter(user=user).exists():
+            return Response({"status": "error", "message": "User is already associated with a company."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = CompanySerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                company_instance = serializer.save()
+
+                employee_instance = Employee.objects.create(
+                    user=user,
+                    company=company_instance,
+                    role=Role.ADMIN.value
+                )
+
+                response_data = {
+                    'company': CompanySerializer(company_instance).data,
+                    'employee': EmployeeSerializer(employee_instance).data
+                }
+
+                return Response({"message": "Company registered successfully for existing user", "status": "success", "data": response_data}, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                logger.error(f"Error registering company for existing user: {e}")
+                return Response({"status": "error", "message": "Failed to register company.", "detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"status": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

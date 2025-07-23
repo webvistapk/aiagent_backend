@@ -15,4 +15,5 @@ urlpatterns = [
     path('employee/delete/<int:pk>/', delete_employee, name='delete-employee'),
     path('company/delete/<int:pk>/', delete_company, name='delete-company'),
     path('company/license-info/', get_company_license_info, name='get-company-license-info'),
+    path('company/register-for-existing-user/', register_company_for_existing_user_view, name='register-company-for-existing-user'),
 ]

@@ -361,3 +361,56 @@ def delete_company(request: Request, pk: int) -> Response:
 @permission_classes([IsAuthenticated, AdminRoleCheckPermission])
 def get_company_license_info(request: Request) -> Response:
     return licensing_service.get_company_license_info(request)
+
+
+@swagger_auto_schema(
+    method='post', operation_id="register_company_for_existing_user", request_body=CompanySerializer,
+    responses={201: openapi.Response(
+        description="Company registered successfully for existing user",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'message': openapi.Schema(type=openapi.TYPE_STRING, description=''),
+                'status': openapi.Schema(type=openapi.TYPE_STRING, description=''),
+                'data': openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'company': openapi.Schema(type=openapi.TYPE_OBJECT, properties=get_serializer_schema(CompanySerializer)),
+                        'employee': openapi.Schema(type=openapi.TYPE_OBJECT, properties=get_serializer_schema(EmployeeSerializer))
+                    }
+                ),
+            },
+        ),
+    ),
+    400: openapi.Response(
+        description="User already associated with a company or invalid company data",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'message': openapi.Schema(type=openapi.TYPE_STRING),
+                'errors': openapi.Schema(type=openapi.TYPE_OBJECT, additionalProperties=True, description='Validation errors')
+            }
+        )
+    ),
+    401: openapi.Response(
+        description="Unauthorized: Authentication credentials were not provided.",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'detail': openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        )
+    ),
+    500: openapi.Response(
+        description="Internal Server Error",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'message': openapi.Schema(type=openapi.TYPE_STRING),
+                'detail': openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        )
+    )}
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def register_company_for_existing_user_view(request: Request) -> Response:
+    return licensing_service.register_company_for_existing_user(request)
