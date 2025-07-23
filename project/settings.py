@@ -12,7 +12,17 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]  # Or use ['aiagent.webvista.pk'] for more security
 
 CSRF_TRUSTED_ORIGINS = [
-    "*",
+    "https://aiagent.webvista.pk",
+    "http://localhost",
+    "https://localhost",
+    "http://127.0.0.1",
+    "https://127.0.0.1",
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
