@@ -387,3 +387,22 @@ class LicensingService:
                 return Response({"status": "error", "message": "Failed to register company.", "detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({"status": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_user_company_and_employee_info(self, request):
+        user = request.user
+        company_data = None
+        employee_data = None
+
+        try:
+            employee = Employee.objects.get(user=user)
+            company = employee.company
+            company_data = CompanySerializer(company).data
+            employee_data = EmployeeGetSerializer(employee).data
+        except Employee.DoesNotExist:
+            pass
+
+        response_data = {
+            "company": company_data,
+            "employee": employee_data
+        }
+        return Response({"message": "User company and employee info retrieved successfully", "status": "success", "data": response_data}, status=status.HTTP_200_OK)

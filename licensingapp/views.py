@@ -414,3 +414,41 @@ def get_company_license_info(request: Request) -> Response:
 @permission_classes([IsAuthenticated])
 def register_company_for_existing_user_view(request: Request) -> Response:
     return licensing_service.register_company_for_existing_user(request)
+
+
+@swagger_auto_schema(
+    method='get', operation_id="get_user_company_and_employee_info",
+    responses={200: openapi.Response(
+        description="User company and employee information retrieved successfully",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'message': openapi.Schema(type=openapi.TYPE_STRING),
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'data': openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'company': openapi.Schema(
+                            type=openapi.TYPE_OBJECT, properties=get_serializer_schema(CompanySerializer), nullable=True
+                        ),
+                        'employee': openapi.Schema(
+                            type=openapi.TYPE_OBJECT, properties=get_serializer_schema(EmployeeGetSerializer), nullable=True
+                        )
+                    }
+                )
+            }
+        )
+    ),
+    401: openapi.Response(
+        description="Unauthorized: Authentication credentials were not provided.",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'detail': openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        )
+    )}
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_company_and_employee_info_view(request: Request) -> Response:
+    return licensing_service.get_user_company_and_employee_info(request)
