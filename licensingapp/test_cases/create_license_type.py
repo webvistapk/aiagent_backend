@@ -18,7 +18,7 @@ class CreateLicenseTypeTests(APITestCase):
         }
 
     def test_month_success(self):
-        print("Test successful creation of a license type with duration in months")
+        print("create_license_type test_month_success Test successful creation of a license type with duration in months")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
         response = self.client.post(self.url, self.payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -26,21 +26,21 @@ class CreateLicenseTypeTests(APITestCase):
         self.assertEqual(LicenseType.objects.get().name, 'basic')
 
     def test_days_success(self):
-        print("Test successful creation of a license type with duration in days")
+        print("create_license_type test_days_success Test successful creation of a license type with duration in days")
         self.payload['duration_type'] = 'days'
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
         response = self.client.post(self.url, self.payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_years_success(self):
-        print("Test successful creation of a license type with duration in years")
+        print("create_license_type test_years_success Test successful creation of a license type with duration in years")
         self.payload['duration_type'] = 'years'
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
         response = self.client.post(self.url, self.payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_incorrect_duration_type(self):
-        print("Test failed creation of a license type with duration type incorrect")
+        print("create_license_type test_incorrect_duration_type Test failed creation of a license type with duration type incorrect")
         self.payload['duration_type'] = 'yearss'
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
         response = self.client.post(self.url, self.payload, format='json')
@@ -56,7 +56,7 @@ class CreateLicenseTypeTests(APITestCase):
 
 
     def test_incorrect_price(self):
-        print("Test failed creation of a license type with price incorrect")
+        print("create_license_type test_incorrect_price Test failed creation of a license type with price incorrect")
         self.payload['price_per_user'] = '5/0'
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
         response = self.client.post(self.url, self.payload, format='json')
@@ -67,14 +67,14 @@ class CreateLicenseTypeTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_incorrect_name(self):
-        print("Test failed creation of a license type with price incorrect")
+        print("create_license_type test_incorrect_name Test failed creation of a license type with price incorrect")
         self.payload['name'] = None
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
         response = self.client.post(self.url, self.payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_incorrect_duration(self):
-        print("Test failed creation of a license type with duration incorrect")
+        print("create_license_type test_incorrect_duration Test failed creation of a license type with duration incorrect")
         self.payload['duration'] = 'qwdwqdwq'
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
         response = self.client.post(self.url, self.payload, format='json')

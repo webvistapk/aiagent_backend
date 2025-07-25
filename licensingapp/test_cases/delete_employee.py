@@ -22,7 +22,7 @@ class DeleteEmployeeTests(APITestCase):
         self.employee_other_company = Employee.objects.create(user=self.employee_other_company_user, company=self.other_company, role=Role.USER.value)
 
     def test_success(self):
-        print("Test successful employee deletion by admin")
+        print("delete_employee test_success Test successful employee deletion by admin")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
         response = self.client.delete(self.delete_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -30,7 +30,7 @@ class DeleteEmployeeTests(APITestCase):
         self.assertFalse(User.objects.filter(id=self.employee_to_delete_user.id).exists())
 
     def test_employee_not_found(self):
-        print("Test delete non-existent employee")
+        print("delete_employee test_employee_not_found Test delete non-existent employee")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
         non_existent_id = self.employee_to_delete.id + 999
         url = reverse('delete-employee', args=[non_existent_id])
@@ -40,33 +40,33 @@ class DeleteEmployeeTests(APITestCase):
         self.assertEqual(response.data['message'], "Employee not found")
 
     def test_delete_employee_from_other_company(self):
-        print("Test delete employee from another company")
+        print("delete_employee test_delete_employee_from_other_company Test delete employee from another company")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
         url = reverse('delete-employee', args=[self.employee_other_company.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data['status'], "error")
         self.assertEqual(response.data['message'], "Employee not found")
-        self.assertTrue(Employee.objects.filter(id=self.employee_other_company.id).exists()) # Should not be deleted
+        self.assertTrue(Employee.objects.filter(id=self.employee_other_company.id).exists())
 
     def test_delete_self(self):
-        print("Test admin attempts to delete their own account")
+        print("delete_employee test_delete_self Test admin attempts to delete their own account")
         self_delete_url = reverse('delete-employee', args=[self.admin_employee.id])
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
         response = self.client.delete(self_delete_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data['status'], "error")
         self.assertEqual(response.data['message'], "Not authorized to delete yourself")
-        self.assertTrue(Employee.objects.filter(id=self.admin_employee.id).exists()) # Should not be deleted
+        self.assertTrue(Employee.objects.filter(id=self.admin_employee.id).exists())
 
     def test_unauthenticated(self):
-        print("Test delete employee without authentication")
-        self.client.credentials() # Clear credentials
+        print("delete_employee test_unauthenticated Test delete employee without authentication")
+        self.client.credentials()
         response = self.client.delete(self.delete_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_not_admin(self):
-        print("Test delete employee by a non-admin user")
+        print("delete_employee test_not_admin Test delete employee by a non-admin user")
         non_admin_user = User.objects.create_user(username='regularuser', password='userpassword')
         Employee.objects.create(user=non_admin_user, company=self.admin_company, role=Role.USER.value)
         non_admin_access_token = str(AccessToken.for_user(non_admin_user))
@@ -77,7 +77,7 @@ class DeleteEmployeeTests(APITestCase):
         self.assertEqual(response.data['detail'], "You do not have permission to perform this action.")
 
     def test_admin_employee_not_found(self):
-        print("Test delete employee when admin employee is not found for the user (user exists but no employee obj)")
+        print("delete_employee test_admin_employee_not_found Test delete employee when admin employee is not found for the user (user exists but no employee obj)")
         user_without_employee = User.objects.create_user(username='noemployee', password='pass')
         token_no_employee = str(AccessToken.for_user(user_without_employee))
 

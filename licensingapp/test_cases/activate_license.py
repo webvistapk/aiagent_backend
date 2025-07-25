@@ -30,7 +30,7 @@ class ActivateLicenseTests(APITestCase):
         )
 
     def test_success_new_license(self):
-        print("Test successful activation of a new license for a company")
+        print("activate_license test_success_new_license Test successful activation of a new license for a company")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
         payload = {
             "license_type": self.license_type_monthly.id
@@ -46,8 +46,7 @@ class ActivateLicenseTests(APITestCase):
         self.assertEqual(new_license.start_date, timezone.now().date())
 
     def test_success_extend_license(self):
-        print("Test successful activation to extend an existing license")
-        # First activate an initial license
+        print("activate_license test_success_extend_license Test successful activation to extend an existing license")
         initial_license = CompanyLicense.objects.create(
             company=self.admin_company,
             license_type=self.license_type_monthly,
@@ -73,8 +72,7 @@ class ActivateLicenseTests(APITestCase):
         self.assertEqual(latest_license.start_date, initial_license.end_date + timedelta(days=1))
 
     def test_success_extend_license_without_type_id(self):
-        print("Test successful activation to extend an existing license without providing license_type_id")
-        # First activate an initial license
+        print("activate_license test_success_extend_license_without_type_id Test successful activation to extend an existing license without providing license_type_id")
         initial_license = CompanyLicense.objects.create(
             company=self.admin_company,
             license_type=self.license_type_monthly,
@@ -86,21 +84,20 @@ class ActivateLicenseTests(APITestCase):
         )
 
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
-        # No license_type in payload
         response = self.client.post(self.url, {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['status'], "success")
         self.assertEqual(CompanyLicense.objects.count(), 2)
         latest_license = CompanyLicense.objects.order_by('-start_date').first()
-        self.assertEqual(latest_license.license_type, self.license_type_monthly) # Should use previous license type
+        self.assertEqual(latest_license.license_type, self.license_type_monthly)
         self.assertEqual(latest_license.total_users, 5)
         self.assertEqual(latest_license.start_date, initial_license.end_date + timedelta(days=1))
 
     def test_license_type_not_found(self):
-        print("Test activation with non-existent license type ID")
+        print("activate_license test_license_type_not_found Test activation with non-existent license type ID")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
         payload = {
-            "license_type": 9999 # Non-existent ID
+            "license_type": 9999
         }
         response = self.client.post(self.url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -108,7 +105,7 @@ class ActivateLicenseTests(APITestCase):
         self.assertEqual(response.data['message'], "License type not found")
 
     def test_no_previous_license_and_no_type_id(self):
-        print("Test activation with no previous license and no license_type ID")
+        print("activate_license test_no_previous_license_and_no_type_id Test activation with no previous license and no license_type ID")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
         response = self.client.post(self.url, {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -116,16 +113,15 @@ class ActivateLicenseTests(APITestCase):
         self.assertEqual(response.data['message'], "No previous license found for this company")
 
     def test_unauthenticated(self):
-        print("Test license activation without authentication")
-        self.client.credentials() # Clear credentials
+        print("activate_license test_unauthenticated Test license activation without authentication")
+        self.client.credentials()
         payload = {"license_type": self.license_type_monthly.id}
         response = self.client.post(self.url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_not_admin(self):
-        print("Test license activation by a non-admin user")
+        print("activate_license test_not_admin Test license activation by a non-admin user")
         non_admin_user = User.objects.create_user(username='regularuser', password='userpassword')
-        # Associate this user with the admin company to test AdminRoleCheckPermission
         Employee.objects.create(user=non_admin_user, company=self.admin_company, role=Role.USER.value)
         non_admin_access_token = str(AccessToken.for_user(non_admin_user))
 
@@ -136,8 +132,7 @@ class ActivateLicenseTests(APITestCase):
         self.assertEqual(response.data['detail'], "You do not have permission to perform this action.")
 
     def test_employee_not_found_for_user(self):
-        print("Test license activation when employee is not found for the user")
-        # Create a user without an associated Employee object
+        print("activate_license test_employee_not_found_for_user Test license activation when employee is not found for the user")
         user_without_employee = User.objects.create_user(username='noemployee', password='pass')
         token_no_employee = str(AccessToken.for_user(user_without_employee))
 

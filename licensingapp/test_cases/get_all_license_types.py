@@ -12,8 +12,7 @@ class GetAllLicenseTypesTests(APITestCase):
         self.url = reverse('get-all-license-types')
 
     def test_success(self):
-        print("Test successful retrieval of all license types")
-        # Create some license types
+        print("get_all_license_types test_success Test successful retrieval of all license types")
         LicenseType.objects.create(name='Basic', duration=1, duration_type='years', price_per_user='10.00')
         LicenseType.objects.create(name='Pro', duration=6, duration_type='months', price_per_user='50.00')
 
@@ -28,8 +27,7 @@ class GetAllLicenseTypesTests(APITestCase):
         self.assertEqual(response.data['license_types'][1]['name'], 'Pro')
 
     def test_no_licenses(self):
-        print("Test retrieval when no license types exist")
-        # No license types are created in setUp, so the database is empty here
+        print("get_all_license_types test_no_licenses Test retrieval when no license types exist")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
         response = self.client.get(self.url)
 
@@ -39,8 +37,8 @@ class GetAllLicenseTypesTests(APITestCase):
         self.assertEqual(len(response.data['license_types']), 0)
 
     def test_unauthenticated(self):
-        print("Test retrieval without authentication")
-        self.client.credentials() # Clear credentials
+        print("get_all_license_types test_unauthenticated Test retrieval without authentication")
+        self.client.credentials()
 
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

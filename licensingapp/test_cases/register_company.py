@@ -22,7 +22,7 @@ class RegisterCompanyTests(APITestCase):
         }
 
     def test_success(self):
-        print("Test successful company registration")
+        print("register_company test_success Test successful company registration")
         response = self.client.post(self.url, self.valid_payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['status'], "success")
@@ -33,7 +33,7 @@ class RegisterCompanyTests(APITestCase):
         self.assertTrue(Employee.objects.filter(user__username='newuser', role='admin').exists())
 
     def test_duplicate_username(self):
-        print("Test registration with duplicate username")
+        print("register_company test_duplicate_username Test registration with duplicate username")
         User.objects.create_user(username='existinguser', password='password123')
         payload = self.valid_payload.copy()
         payload['user']['username'] = 'existinguser'
@@ -44,9 +44,9 @@ class RegisterCompanyTests(APITestCase):
         self.assertIn('username', response.data['errors']['user'])
 
     def test_invalid_user_data(self):
-        print("Test registration with invalid user data")
+        print("register_company test_invalid_user_data Test registration with invalid user data")
         payload = self.valid_payload.copy()
-        payload['user'].pop('username') # Missing username
+        payload['user'].pop('username')
 
         response = self.client.post(self.url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -54,9 +54,9 @@ class RegisterCompanyTests(APITestCase):
         self.assertIn('username', response.data['errors']['user'])
 
     def test_invalid_company_data(self):
-        print("Test registration with invalid company data")
+        print("register_company test_invalid_company_data Test registration with invalid company data")
         payload = self.valid_payload.copy()
-        payload['company'].pop('name') # Missing company name
+        payload['company'].pop('name')
 
         response = self.client.post(self.url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -64,7 +64,7 @@ class RegisterCompanyTests(APITestCase):
         self.assertIn('name', response.data['errors']['company'])
 
     def test_missing_user_field(self):
-        print("Test registration with missing 'user' top-level field")
+        print("register_company test_missing_user_field Test registration with missing 'user' top-level field")
         payload = self.valid_payload.copy()
         payload.pop('user')
 
@@ -74,7 +74,7 @@ class RegisterCompanyTests(APITestCase):
         self.assertIn('user', response.data['errors'])
 
     def test_missing_company_field(self):
-        print("Test registration with missing 'company' top-level field")
+        print("register_company test_missing_company_field Test registration with missing 'company' top-level field")
         payload = self.valid_payload.copy()
         payload.pop('company')
 

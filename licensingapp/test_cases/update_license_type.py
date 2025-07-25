@@ -19,7 +19,7 @@ class UpdateLicenseTypeTests(APITestCase):
         self.update_url = reverse('update-license-type', args=[self.license_type.id])
 
     def test_success(self):
-        print("Test successful update of a license type")
+        print("update_license_type test_success Test successful update of a license type")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
         payload = {
             "name": "Premium License",
@@ -40,7 +40,7 @@ class UpdateLicenseTypeTests(APITestCase):
         self.assertEqual(str(updated_license_type.price_per_user), payload['price_per_user'])
 
     def test_not_found(self):
-        print("Test update of a non-existent license type")
+        print("update_license_type test_not_found Test update of a non-existent license type")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
         non_existent_id = self.license_type.id + 999
         url = reverse('update-license-type', args=[non_existent_id])
@@ -52,11 +52,11 @@ class UpdateLicenseTypeTests(APITestCase):
         self.assertEqual(response.data['message'], "License type not found")
 
     def test_invalid_data(self):
-        print("Test update with invalid data")
+        print("update_license_type test_invalid_data Test update with invalid data")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
         payload = {
             "name": "Invalid License",
-            "duration": "not_a_number", # Invalid duration
+            "duration": "not_a_number",
             "duration_type": "days",
             "price_per_user": "10.00"
         }
@@ -67,7 +67,7 @@ class UpdateLicenseTypeTests(APITestCase):
         self.assertIn('duration', response.data['errors'])
 
     def test_unauthenticated(self):
-        print("Test update without authentication")
+        print("update_license_type test_unauthenticated Test update without authentication")
         self.client.credentials()
         payload = {"name": "Unauthorized Update"}
 

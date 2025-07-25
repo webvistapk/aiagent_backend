@@ -34,7 +34,7 @@ class IncreaseTotalUsersTests(APITestCase):
         )
 
     def test_success(self):
-        print("Test successful increase of total users")
+        print("increase_total_users test_success Test successful increase of total users")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
         payload = {"total_users_to_add": 3}
 
@@ -48,7 +48,7 @@ class IncreaseTotalUsersTests(APITestCase):
         self.assertEqual(str(self.initial_license.total_amount), '80.00')
 
     def test_no_active_license(self):
-        print("Test increase total users when no active license exists")
+        print("increase_total_users test_no_active_license Test increase total users when no active license exists")
         self.initial_license.status = 'inactive'
         self.initial_license.save()
 
@@ -60,9 +60,9 @@ class IncreaseTotalUsersTests(APITestCase):
         self.assertEqual(response.data['message'], "No active license found for this company")
 
     def test_invalid_input(self):
-        print("Test increase total users with invalid input")
+        print("increase_total_users test_invalid_input Test increase total users with invalid input")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
-        payload = {"total_users_to_add": 0} # Must be min_value=1
+        payload = {"total_users_to_add": 0}
         response = self.client.post(self.url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['status'], "error")
@@ -75,14 +75,14 @@ class IncreaseTotalUsersTests(APITestCase):
         self.assertIn('total_users_to_add', response.data['errors'])
 
     def test_unauthenticated(self):
-        print("Test increase total users without authentication")
-        self.client.credentials() # Clear credentials
+        print("increase_total_users test_unauthenticated Test increase total users without authentication")
+        self.client.credentials()
         payload = {"total_users_to_add": 1}
         response = self.client.post(self.url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_not_admin(self):
-        print("Test increase total users by a non-admin user")
+        print("increase_total_users test_not_admin Test increase total users by a non-admin user")
         non_admin_user = User.objects.create_user(username='regularuser', password='userpassword')
         Employee.objects.create(user=non_admin_user, company=self.admin_company, role=Role.USER.value)
         non_admin_access_token = str(AccessToken.for_user(non_admin_user))
@@ -94,7 +94,7 @@ class IncreaseTotalUsersTests(APITestCase):
         self.assertEqual(response.data['detail'], "You do not have permission to perform this action.")
 
     def test_employee_not_found_for_user(self):
-        print("Test increase total users when employee is not found for the user")
+        print("increase_total_users test_employee_not_found_for_user Test increase total users when employee is not found for the user")
         user_without_employee = User.objects.create_user(username='noemployee', password='pass')
         token_no_employee = str(AccessToken.for_user(user_without_employee))
 

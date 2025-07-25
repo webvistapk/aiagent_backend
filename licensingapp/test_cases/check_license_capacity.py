@@ -33,24 +33,23 @@ class CheckLicenseCapacityTests(APITestCase):
             status='active'
         )
 
-        # Create an employee to take up one slot
         self.existing_user = User.objects.create_user(username='existinguser', password='password123')
         self.existing_employee = Employee.objects.create(user=self.existing_user, company=self.admin_company, role=Role.USER.value)
 
     def test_success(self):
-        print("Test successful retrieval of license capacity")
+        print("check_license_capacity test_success Test successful retrieval of license capacity")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['status'], "success")
         self.assertIn('data', response.data)
-        self.assertEqual(response.data['data']['current_employees'], 2) # Admin employee + existing employee
+        self.assertEqual(response.data['data']['current_employees'], 2)
         self.assertEqual(response.data['data']['allowed_users'], 5)
         self.assertEqual(response.data['data']['users_left'], 3)
 
     def test_no_active_license(self):
-        print("Test retrieval when no active license exists")
+        print("check_license_capacity test_no_active_license Test retrieval when no active license exists")
         self.active_license.status = 'inactive'
         self.active_license.save()
 
@@ -62,15 +61,14 @@ class CheckLicenseCapacityTests(APITestCase):
         self.assertEqual(response.data['message'], "No active license found for this company")
 
     def test_unauthenticated(self):
-        print("Test license capacity check without authentication")
-        self.client.credentials() # Clear credentials
+        print("check_license_capacity test_unauthenticated Test license capacity check without authentication")
+        self.client.credentials()
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_not_admin(self):
-        print("Test license capacity check by a non-admin user")
+        print("check_license_capacity test_not_admin Test license capacity check by a non-admin user")
         non_admin_user = User.objects.create_user(username='regularuser', password='userpassword')
-        # Associate this user with the admin company
         Employee.objects.create(user=non_admin_user, company=self.admin_company, role=Role.USER.value)
         non_admin_access_token = str(AccessToken.for_user(non_admin_user))
 
@@ -80,8 +78,7 @@ class CheckLicenseCapacityTests(APITestCase):
         self.assertEqual(response.data['detail'], "You do not have permission to perform this action.")
 
     def test_employee_not_found_for_user(self):
-        print("Test license capacity check when employee is not found for the user")
-        # Create a user without an associated Employee object
+        print("check_license_capacity test_employee_not_found_for_user Test license capacity check when employee is not found for the user")
         user_without_employee = User.objects.create_user(username='noemployee', password='pass')
         token_no_employee = str(AccessToken.for_user(user_without_employee))
 

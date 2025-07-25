@@ -20,28 +20,26 @@ class GetCompanyEmployeesTests(APITestCase):
         self.employee2_user = User.objects.create_user(username='jane.smith', password='password2', first_name='Jane', last_name='Smith')
         self.employee2 = Employee.objects.create(user=self.employee2_user, company=self.admin_company, role=Role.USER.value)
 
-        # Employee for another company
         self.other_company = Company.objects.create(name='Other Company', address='456 Other St')
         self.other_employee_user = User.objects.create_user(username='otheruser', password='otherpassword')
         Employee.objects.create(user=self.other_employee_user, company=self.other_company, role=Role.USER.value)
 
     def test_success(self):
-        print("Test successful retrieval of all company employees")
+        print("get_company_employees test_success Test successful retrieval of all company employees")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['status'], "success")
         self.assertIn('employees', response.data)
-        self.assertEqual(len(response.data['employees']), 3) # Admin + employee1 + employee2
+        self.assertEqual(len(response.data['employees']), 3)
         self.assertEqual(response.data['total_count'], 3)
         self.assertFalse(response.data['has_next_page'])
 
     def test_success_with_pagination(self):
-        print("Test successful retrieval with pagination")
+        print("get_company_employees test_success_with_pagination Test successful retrieval with pagination")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
 
-        # First page (limit=2, offset=0)
         response = self.client.get(f"{self.url}?limit=2&offset=0")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['employees']), 2)
@@ -49,7 +47,6 @@ class GetCompanyEmployeesTests(APITestCase):
         self.assertTrue(response.data['has_next_page'])
         self.assertEqual(response.data['next_offset'], 2)
 
-        # Second page (limit=2, offset=2)
         response = self.client.get(f"{self.url}?limit=2&offset=2")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['employees']), 1)
@@ -59,30 +56,26 @@ class GetCompanyEmployeesTests(APITestCase):
         self.assertEqual(response.data['previous_offset'], 0)
 
     def test_success_with_filters(self):
-        print("Test successful retrieval with filters")
+        print("get_company_employees test_success_with_filters Test successful retrieval with filters")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
 
-        # Filter by first name
         response = self.client.get(f"{self.url}?first_name=John")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['employees']), 1)
         self.assertEqual(response.data['employees'][0]['user']['first_name'], 'John')
 
-        # Filter by username
         response = self.client.get(f"{self.url}?username=jane")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['employees']), 1)
         self.assertEqual(response.data['employees'][0]['user']['username'], 'jane.smith')
 
-        # Filter by last name (case-insensitive search)
         response = self.client.get(f"{self.url}?last_name=smith")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['employees']), 1)
         self.assertEqual(response.data['employees'][0]['user']['last_name'], 'Smith')
 
     def test_no_employees(self):
-        print("Test retrieval when only admin employee exists")
-        # Delete other employees to test scenario with only admin
+        print("get_company_employees test_no_employees Test retrieval when only admin employee exists")
         self.employee1.delete()
         self.employee2.delete()
 
@@ -92,18 +85,18 @@ class GetCompanyEmployeesTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['status'], "success")
         self.assertIn('employees', response.data)
-        self.assertEqual(len(response.data['employees']), 1) # Only admin employee
+        self.assertEqual(len(response.data['employees']), 1)
         self.assertEqual(response.data['employees'][0]['user']['username'], 'admin')
         self.assertEqual(response.data['total_count'], 1)
 
     def test_unauthenticated(self):
-        print("Test retrieval without authentication")
-        self.client.credentials() # Clear credentials
+        print("get_company_employees test_unauthenticated Test retrieval without authentication")
+        self.client.credentials()
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_not_admin(self):
-        print("Test retrieval by a non-admin user")
+        print("get_company_employees test_not_admin Test retrieval by a non-admin user")
         non_admin_user = User.objects.create_user(username='regularuser', password='userpassword')
         Employee.objects.create(user=non_admin_user, company=self.admin_company, role=Role.USER.value)
         non_admin_access_token = str(AccessToken.for_user(non_admin_user))
@@ -114,7 +107,7 @@ class GetCompanyEmployeesTests(APITestCase):
         self.assertEqual(response.data['detail'], "You do not have permission to perform this action.")
 
     def test_admin_employee_not_found(self):
-        print("Test retrieval when admin employee is not found for the user")
+        print("get_company_employees test_admin_employee_not_found Test retrieval when admin employee is not found for the user")
         user_without_employee = User.objects.create_user(username='noemployee', password='pass')
         token_no_employee = str(AccessToken.for_user(user_without_employee))
 

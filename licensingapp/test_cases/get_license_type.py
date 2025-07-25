@@ -19,7 +19,7 @@ class GetLicenseTypeTests(APITestCase):
         self.get_url = reverse('get-license-type', args=[self.license_type.id])
 
     def test_success(self):
-        print("Test successful retrieval of a license type")
+        print("get_license_type test_success Test successful retrieval of a license type")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
         response = self.client.get(self.get_url)
 
@@ -31,7 +31,7 @@ class GetLicenseTypeTests(APITestCase):
         self.assertEqual(response.data['license'][0]['name'], self.license_type.name)
 
     def test_not_found(self):
-        print("Test retrieval of a non-existent license type")
+        print("get_license_type test_not_found Test retrieval of a non-existent license type")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
         non_existent_id = self.license_type.id + 999
         url = reverse('get-license-type', args=[non_existent_id])
@@ -42,7 +42,7 @@ class GetLicenseTypeTests(APITestCase):
         self.assertEqual(response.data['message'], "License type not found")
 
     def test_unauthenticated(self):
-        print("Test retrieval without authentication")
+        print("get_license_type test_unauthenticated Test retrieval without authentication")
         self.client.credentials()
 
         response = self.client.get(self.get_url)

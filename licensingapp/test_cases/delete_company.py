@@ -41,6 +41,7 @@ class DeleteCompanyTests(APITestCase):
 
 
     def test_success_company_deletion_by_its_admin(self):
+        print("delete_company test_success_company_deletion_by_its_admin Executing test: success company deletion by its admin")
         initial_company_count = Company.objects.count()
         initial_employee_count = Employee.objects.count()
         initial_user_count = User.objects.count()
@@ -65,6 +66,7 @@ class DeleteCompanyTests(APITestCase):
 
 
     def test_company_not_found(self):
+        print("delete_company test_company_not_found Executing test: company not found")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.admin_access_token)
         non_existent_id = self.admin_company.id + 999
         url = reverse('delete-company', args=[non_existent_id])
@@ -74,17 +76,20 @@ class DeleteCompanyTests(APITestCase):
         self.assertEqual(response.data['message'], "Company not found")
 
     def test_unauthenticated(self):
+        print("delete_company test_unauthenticated Executing test: unauthenticated")
         self.client.credentials()
         response = self.client.delete(self.delete_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_not_admin_role(self):
+        print("delete_company test_not_admin_role Executing test: not admin role")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.non_admin_access_token)
         response = self.client.delete(self.delete_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data['detail'], "You do not have permission to perform this action.")
 
     def test_admin_employee_not_found(self):
+        print("delete_company test_admin_employee_not_found Executing test: admin employee not found")
         user_without_employee = User.objects.create_user(username='noemployee_user', password='pass')
         token_no_employee = str(AccessToken.for_user(user_without_employee))
 
@@ -94,6 +99,7 @@ class DeleteCompanyTests(APITestCase):
         self.assertEqual(response.data['detail'], "You do not have permission to perform this action.")
 
     def test_admin_deletes_other_company(self):
+        print("delete_company test_admin_deletes_other_company Executing test: admin deletes other company")
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.other_company_admin_access_token)
         response = self.client.delete(self.delete_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

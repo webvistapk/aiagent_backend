@@ -17,6 +17,7 @@ class GetUserCompanyAndEmployeeInfoTests(APITestCase):
         self.employee = Employee.objects.create(user=self.user_with_company, company=self.company, role=Role.ADMIN.value)
 
     def test_success_user_with_company_and_employee(self):
+        print("get_user_company_and_employee_info test_success_user_with_company_and_employee Executing test: user with company and employee")
         self.client.force_authenticate(user=self.user_with_company)
         response = self.client.get(self.url, format='json')
 
@@ -34,6 +35,7 @@ class GetUserCompanyAndEmployeeInfoTests(APITestCase):
         self.assertEqual(response.data['data']['employee']['role'], self.employee.role)
 
     def test_success_user_without_company_and_employee(self):
+        print("get_user_company_and_employee_info test_success_user_without_company_and_employee Executing test: user without company and employee")
         self.client.force_authenticate(user=self.user_no_company)
         response = self.client.get(self.url, format='json')
 
@@ -44,6 +46,7 @@ class GetUserCompanyAndEmployeeInfoTests(APITestCase):
         self.assertEqual(response.data['message'], "User company and employee info retrieved successfully")
 
     def test_unauthenticated_access(self):
+        print("get_user_company_and_employee_info test_unauthenticated_access Executing test: unauthenticated access")
         self.client.logout()
         response = self.client.get(self.url, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
