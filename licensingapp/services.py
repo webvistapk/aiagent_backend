@@ -2,12 +2,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
 from .models import LicenseType, Company, Employee, CompanyLicense
-from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseDetailSerializer, CompanyLicenseIncreaseUsersSerializer, EmployeeLicenseCapacitySerializer, EmployeeRegistrationByAdminSerializer, EmployeeGetSerializer
+from .serializers import LicenseTypeSerializer, CompanySerializer, UserSerializer, EmployeeSerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseDetailSerializer, CompanyLicenseIncreaseUsersSerializer, EmployeeLicenseCapacitySerializer, EmployeeRegistrationByAdminSerializer, EmployeeGetSerializer, ActiveLicenseCheckSerializer
 from django.db import transaction
 from django.utils import timezone
 import datetime
 import logging
-from project.commons.common_constants import Role
+from project.commons.common_constants import Role, LicenseStatus
 
 from project.commons.common_methods import paginatedResponse
 
@@ -406,3 +406,21 @@ class LicensingService:
             "employee": employee_data
         }
         return Response({"message": "User company and employee info retrieved successfully", "status": "success", "data": response_data}, status=status.HTTP_200_OK)
+
+    def check_active_license(self, request):
+        user = request.user
+        try:
+            employee = Employee.objects.get(user=user)
+            company = employee.company
+        except Employee.DoesNotExist:
+            return Response({"status": "error", "message": "Employee not found for this user"}, status=status.HTTP_404_NOT_FOUND)
+        
+        active_license_exists = CompanyLicense.objects.filter(
+            company=company,
+            status=LicenseStatus.ACTIVE.value,
+            end_date__gte=timezone.now().date()
+        ).exists()
+
+        response_data = {'active_license': active_license_exists}
+        serializer = ActiveLicenseCheckSerializer(response_data)
+        return Response({"status": "success", "message": "License active status retrieved successfully", "data": serializer.data}, status=status.HTTP_200_OK)

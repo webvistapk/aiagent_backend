@@ -8,7 +8,7 @@ from rest_framework import status
 from project.commons.middleware import AdminRoleCheckPermission
 
 from .services import LicensingService
-from .serializers import LicenseTypeSerializer, CompanySerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseIncreaseUsersSerializer, CompanyLicenseDetailSerializer, EmployeeLicenseCapacitySerializer, EmployeeRegistrationByAdminSerializer, EmployeeSerializer, EmployeeGetSerializer
+from .serializers import LicenseTypeSerializer, CompanySerializer, CompanyRegistrationSerializer, CompanyLicenseSerializer, CompanyLicenseIncreaseUsersSerializer, CompanyLicenseDetailSerializer, EmployeeLicenseCapacitySerializer, EmployeeRegistrationByAdminSerializer, EmployeeSerializer, EmployeeGetSerializer, ActiveLicenseCheckSerializer
 from .models import CompanyLicense, Employee
 
 
@@ -452,3 +452,40 @@ def register_company_for_existing_user_view(request: Request) -> Response:
 @permission_classes([IsAuthenticated])
 def get_user_company_and_employee_info_view(request: Request) -> Response:
     return licensing_service.get_user_company_and_employee_info(request)
+
+
+@swagger_auto_schema(
+    method='get', operation_id="check_active_license",
+    responses={200: openapi.Response(
+        description="License active status retrieved successfully",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING, description=''),
+                'message': openapi.Schema(type=openapi.TYPE_STRING, description=''),
+                'active_license': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Whether the company has an active license or not')
+            }
+        )
+    ),
+    404: openapi.Response(
+        description="Employee not found for this user",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'message': openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        )
+    ),
+    401: openapi.Response(
+        description="Unauthorized: Authentication credentials were not provided.",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT, properties={
+                'detail': openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        )
+    )}
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_active_license(request: Request) -> Response:
+    return licensing_service.check_active_license(request)

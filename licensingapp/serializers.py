@@ -93,3 +93,7 @@ class EmployeeRegistrationByAdminSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'password', 'email', 'first_name', 'last_name']
         extra_kwargs = {'password': {'write_only': True}}
+
+
+class ActiveLicenseCheckSerializer(serializers.Serializer):
+    active_license = serializers.BooleanField()
